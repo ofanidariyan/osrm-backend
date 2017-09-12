@@ -8,6 +8,9 @@
       - Exposes `use_threads_number=Number` parameter of `EngineConfig` to limit a number of threads in a TBB internal pool
     - Internals
       - MLD uses a unidirectional Dijkstra for 1-to-N and N-to-1 matrices
+    - Guidance
+      - don't suppress name announcements via sliproad handler
+      - allow a single hop intersection in sliproad handler
 
 # 5.12.0
     - Guidance
