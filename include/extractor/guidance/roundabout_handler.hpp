@@ -41,6 +41,7 @@ class RoundaboutHandler : public IntersectionHandler
 {
   public:
     RoundaboutHandler(const util::NodeBasedDynamicGraph &node_based_graph,
+                      const EdgeBasedNodeDataContainer &node_data_container,
                       const std::vector<util::Coordinate> &coordinates,
                       const CompressedEdgeContainer &compressed_edge_container,
                       const util::NameTable &name_table,

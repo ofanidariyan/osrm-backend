@@ -377,55 +377,61 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
 
     if (in_forward_direction)
     { // add (forward) segments or (forward,backward) for non-split edges in backward direction
+        const auto annotation_data_id = external_memory.all_edges_annotation_data_list.size();
+        external_memory.all_edges_annotation_data_list.push_back(
+            {name_id, parsed_way.forward_travel_mode, forward_classes, turn_lane_id_forward});
         util::for_each_pair(
             nodes.cbegin(),
             nodes.cend(),
             [&](const osmium::NodeRef &first_node, const osmium::NodeRef &last_node) {
-                external_memory.all_edges_list.push_back(
-                    InternalExtractorEdge(OSMNodeID{static_cast<std::uint64_t>(first_node.ref())},
-                                          OSMNodeID{static_cast<std::uint64_t>(last_node.ref())},
-                                          name_id,
-                                          forward_weight_data,
-                                          forward_duration_data,
-                                          true,
-                                          in_backward_direction && !split_edge,
-                                          parsed_way.roundabout,
-                                          parsed_way.circular,
-                                          parsed_way.is_startpoint,
-                                          parsed_way.forward_restricted,
-                                          split_edge,
-                                          parsed_way.forward_travel_mode,
-                                          forward_classes,
-                                          turn_lane_id_forward,
-                                          road_classification,
-                                          {}));
+                NodeBasedEdgeWithOSM edge = {
+                    OSMNodeID{static_cast<std::uint64_t>(first_node.ref())},
+                    OSMNodeID{static_cast<std::uint64_t>(last_node.ref())},
+                    0,  // weight
+                    0,  // duration
+                    {}, // geometry id
+                    static_cast<AnnotationID>(annotation_data_id),
+                    {true,
+                     in_backward_direction && !split_edge,
+                     split_edge,
+                     parsed_way.roundabout,
+                     parsed_way.circular,
+                     parsed_way.is_startpoint,
+                     parsed_way.forward_restricted,
+                     road_classification}};
+
+                external_memory.all_edges_list.push_back(InternalExtractorEdge(
+                    std::move(edge), forward_weight_data, forward_duration_data, {}));
             });
     }
 
     if (in_backward_direction && (!in_forward_direction || split_edge))
     { // add (backward) segments for split edges or not in forward direction
+        const auto annotation_data_id = external_memory.all_edges_annotation_data_list.size();
+        external_memory.all_edges_annotation_data_list.push_back(
+            {name_id, parsed_way.backward_travel_mode, backward_classes, turn_lane_id_backward});
         util::for_each_pair(
             nodes.cbegin(),
             nodes.cend(),
             [&](const osmium::NodeRef &first_node, const osmium::NodeRef &last_node) {
-                external_memory.all_edges_list.push_back(
-                    InternalExtractorEdge(OSMNodeID{static_cast<std::uint64_t>(first_node.ref())},
-                                          OSMNodeID{static_cast<std::uint64_t>(last_node.ref())},
-                                          name_id,
-                                          backward_weight_data,
-                                          backward_duration_data,
-                                          false,
-                                          true,
-                                          parsed_way.roundabout,
-                                          parsed_way.circular,
-                                          parsed_way.is_startpoint,
-                                          parsed_way.backward_restricted,
-                                          split_edge,
-                                          parsed_way.backward_travel_mode,
-                                          backward_classes,
-                                          turn_lane_id_backward,
-                                          road_classification,
-                                          {}));
+                NodeBasedEdgeWithOSM edge = {
+                    OSMNodeID{static_cast<std::uint64_t>(first_node.ref())},
+                    OSMNodeID{static_cast<std::uint64_t>(last_node.ref())},
+                    0,  // weight
+                    0,  // duration
+                    {}, // geometry id
+                    static_cast<AnnotationID>(annotation_data_id),
+                    {false,
+                     true,
+                     split_edge,
+                     parsed_way.roundabout,
+                     parsed_way.circular,
+                     parsed_way.is_startpoint,
+                     parsed_way.backward_restricted,
+                     road_classification}};
+
+                external_memory.all_edges_list.push_back(InternalExtractorEdge(
+                    std::move(edge), backward_weight_data, backward_duration_data, {}));
             });
     }
 
